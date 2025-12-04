@@ -5,12 +5,49 @@ window.addEventListener('message', function(event) {
     }
 });
 
-// Funciones para interactuar con el servidor
+// Función para crear una banda
 document.getElementById('createBand').addEventListener('click', () => {
-    const bandName = prompt("Nombre de la banda:");
-    const leader = prompt("Líder de la banda:");
+    const bandName = document.getElementById('bandName').value;
+    const leader = document.getElementById('leader').value;
     fetch(`https://${GetParentResourceName()}/createBand`, {
         method: 'POST',
-        body: JSON.stringify({ bandName, leader })
+        body: JSON.stringify({ bandName, leader }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
     });
+});
+
+// Función para añadir miembros
+document.getElementById('addMember').addEventListener('click', () => {
+    const bandName = document.getElementById('bandName').value;
+    const member = document.getElementById('member').value;
+    fetch(`https://${GetParentResourceName()}/addMember`, {
+        method: 'POST',
+        body: JSON.stringify({ bandName, member }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+});
+
+// Función para eliminar bandas
+document.getElementById('deleteBand').addEventListener('click', () => {
+    const bandName = document.getElementById('deleteBandName').value;
+    fetch(`https://${GetParentResourceName()}/deleteBand`, {
+        method: 'POST',
+        body: JSON.stringify({ bandName }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+});
+
+// Cerrar el menú
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        fetch(`https://${GetParentResourceName()}/closeMenu`, {
+            method: 'POST'
+        });
+    }
 });

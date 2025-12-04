@@ -8,9 +8,19 @@
     <div class="container">
         <h1>Gestión de Bandas</h1>
         <div class="menu">
-            <button id="createBand">Crear Banda</button>
-            <button id="manageMembers">Gestionar Miembros</button>
-            <button id="viewActivities">Ver Actividades</button>
+            <div class="form-group">
+                <input type="text" id="bandName" placeholder="Nombre de la banda">
+                <input type="text" id="leader" placeholder="Líder de la banda">
+                <button id="createBand">Crear Banda</button>
+            </div>
+            <div class="form-group">
+                <input type="text" id="member" placeholder="Nombre del miembro">
+                <button id="addMember">Añadir Miembro</button>
+            </div>
+            <div class="form-group">
+                <input type="text" id="deleteBandName" placeholder="Nombre de la banda">
+                <button id="deleteBand">Eliminar Banda</button>
+            </div>
         </div>
     </div>
     <script src="script.js"></script>
