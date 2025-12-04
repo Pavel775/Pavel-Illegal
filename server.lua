@@ -14,7 +14,7 @@ local function DetectFramework()
     end
 end
 
--- Función para notificaciones (compatible con ESX y QBCore)
+-- Función para notificaciones
 local function Notify(src, message)
     if Config.Framework == 'esx' then
         TriggerClientEvent('esx:showNotification', src, message)
@@ -23,13 +23,23 @@ local function Notify(src, message)
     end
 end
 
--- Función para obtener el jugador (compatible con ESX y QBCore)
+-- Función para obtener el jugador
 local function GetPlayer(src)
     if Config.Framework == 'esx' then
         return ESX.GetPlayerFromId(src)
     elseif Config.Framework == 'qbcore' then
         return QBCore.Functions.GetPlayer(src)
     end
+end
+
+-- Función para obtener el nivel de la banda
+local function GetBandLevel(band)
+    for i = #Config.BandLevels, 1, -1 do
+        if band.xp >= Config.BandLevels[i].xpRequired then
+            return Config.BandLevels[i]
+        end
+    end
+    return Config.BandLevels[1]
 end
 
 -- Evento para crear una banda
@@ -52,8 +62,9 @@ AddEventHandler('pavel_ilegal:createBand', function(bandName, leader)
                     name = bandName,
                     leader = leader,
                     members = {},
-                    reputation = 0,
+                    xp = 0,
                     money = 0,
+                    level = 1,
                     activities = {}
                 }
                 Notify(src, "Banda creada: " .. bandName)
@@ -71,8 +82,14 @@ RegisterNetEvent('pavel_ilegal:addMember')
 AddEventHandler('pavel_ilegal:addMember', function(bandName, member)
     local src = source
     if bands[bandName] then
-        table.insert(bands[bandName].members, member)
-        Notify(src, "Miembro añadido a " .. bandName)
+        local band = bands[bandName]
+        local currentLevel = GetBandLevel(band)
+        if #band.members < currentLevel.maxMembers then
+            table.insert(band.members, member)
+            Notify(src, "Miembro añadido a " .. bandName)
+        else
+            Notify(src, "La banda ha alcanzado el límite de miembros para su nivel.")
+        end
     else
         Notify(src, "La banda no existe.")
     end
@@ -86,8 +103,8 @@ AddEventHandler('pavel_ilegal:startActivity', function(activityType, bandName)
 
     if player and bands[bandName] then
         local band = bands[bandName]
-        local isMember = false
         local identifier = player.identifier or player.PlayerData.citizenid
+        local isMember = false
 
         for _, member in ipairs(band.members) do
             if member == identifier then
@@ -111,19 +128,91 @@ AddEventHandler('pavel_ilegal:startActivity', function(activityType, bandName)
                 end
 
                 if cops >= Config.Activities[activityType].minPolice then
-                    local reward = math.random(Config.Activities[activityType].reward.min, Config.Activities[activityType].reward.max)
+                    local activity = Config.Activities[activityType]
+                    local currentLevel = GetBandLevel(band)
+                    local reward = math.floor(math.random(activity.reward.min, activity.reward.max) * currentLevel.rewardBonus)
+                    local xp = activity.xp
+
                     band.money = band.money + reward
-                    band.reputation = band.reputation + 1
+                    band.xp = band.xp + xp
 
                     cooldowns[bandName] = cooldowns[bandName] or {}
-                    cooldowns[bandName][activityType] = os.time() + Config.Activities[activityType].cooldown
+                    cooldowns[bandName][activityType] = os.time() + activity.cooldown
 
-                    Notify(src, "Actividad completada. Recompensa: $" .. reward)
+                    Notify(src, string.format("Actividad completada. Recompensa: $%s | XP: %s", reward, xp))
                 else
                     Notify(src, "No hay suficientes policías en servicio.")
                 end
             else
                 Notify(src, "La actividad está en cooldown.")
+            end
+        else
+            Notify(src, "No eres miembro de esta banda.")
+        end
+    else
+        Notify(src, "La banda no existe.")
+    end
+end)
+
+-- Evento para depositar dinero en la caja fuerte
+RegisterNetEvent('pavel_ilegal:depositMoney')
+AddEventHandler('pavel_ilegal:depositMoney', function(bandName, amount)
+    local src = source
+    local player = GetPlayer(src)
+
+    if player and bands[bandName] then
+        local band = bands[bandName]
+        local identifier = player.identifier or player.PlayerData.citizenid
+        local isMember = false
+
+        for _, member in ipairs(band.members) do
+            if member == identifier then
+                isMember = true
+                break
+            end
+        end
+
+        if isMember or band.leader == identifier then
+            if player.getMoney() >= amount then
+                player.removeMoney(amount)
+                band.money = band.money + amount
+                Notify(src, "Depositaste $" .. amount .. " en la caja fuerte.")
+            else
+                Notify(src, "No tienes suficiente dinero.")
+            end
+        else
+            Notify(src, "No eres miembro de esta banda.")
+        end
+    else
+        Notify(src, "La banda no existe.")
+    end
+end)
+
+-- Evento para retirar dinero de la caja fuerte
+RegisterNetEvent('pavel_ilegal:withdrawMoney')
+AddEventHandler('pavel_ilegal:withdrawMoney', function(bandName, amount)
+    local src = source
+    local player = GetPlayer(src)
+
+    if player and bands[bandName] then
+        local band = bands[bandName]
+        local identifier = player.identifier or player.PlayerData.citizenid
+        local isMember = false
+
+        for _, member in ipairs(band.members) do
+            if member == identifier then
+                isMember = true
+                break
+            end
+        end
+
+        if isMember or band.leader == identifier then
+            if band.money >= amount then
+                band.money = band.money - amount
+                player.addMoney(amount)
+                Notify(src, "Retiraste $" .. amount .. " de la caja fuerte.")
+            else
+                Notify(src, "La banda no tiene suficiente dinero.")
             end
         else
             Notify(src, "No eres miembro de esta banda.")

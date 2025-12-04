@@ -1,7 +1,19 @@
 // Escuchar mensajes del cliente
 window.addEventListener('message', function(event) {
     if (event.data.action === 'openMenu') {
-        document.querySelector('.container').style.display = 'block';
+        document.getElementById('mainMenu').style.display = 'block';
+        document.getElementById('npcMenu').style.display = 'none';
+    } else if (event.data.action === 'openNPCMenu') {
+        document.getElementById('mainMenu').style.display = 'none';
+        document.getElementById('npcMenu').style.display = 'block';
+
+        if (event.data.npcType === 'safe') {
+            document.getElementById('npcTitle').textContent = 'Caja Fuerte';
+            document.getElementById('safeOptions').style.display = 'block';
+        } else {
+            document.getElementById('npcTitle').textContent = event.data.npcType.charAt(0).toUpperCase() + event.data.npcType.slice(1);
+            document.getElementById('safeOptions').style.display = 'none';
+        }
     }
 });
 
@@ -38,6 +50,32 @@ document.getElementById('startActivity').addEventListener('click', () => {
     fetch(`https://${GetParentResourceName()}/startActivity`, {
         method: 'POST',
         body: JSON.stringify({ bandName, activityType }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+});
+
+// Función para depositar dinero
+document.getElementById('depositMoney').addEventListener('click', () => {
+    const bandName = document.getElementById('bandName').value;
+    const amount = parseInt(document.getElementById('amount').value);
+    fetch(`https://${GetParentResourceName()}/depositMoney`, {
+        method: 'POST',
+        body: JSON.stringify({ bandName, amount }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+});
+
+// Función para retirar dinero
+document.getElementById('withdrawMoney').addEventListener('click', () => {
+    const bandName = document.getElementById('bandName').value;
+    const amount = parseInt(document.getElementById('amount').value);
+    fetch(`https://${GetParentResourceName()}/withdrawMoney`, {
+        method: 'POST',
+        body: JSON.stringify({ bandName, amount }),
         headers: {
             'Content-Type': 'application/json'
         }
