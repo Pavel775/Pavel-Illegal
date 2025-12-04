@@ -1,9 +1,18 @@
 local bandNPCs = {}
 
+-- Asegúrate de que el menú esté oculto al inicio
+CreateThread(function()
+    Wait(1000)
+    SendNUIMessage({ action = 'hideMenu' })
+end)
+
 -- Comando para abrir el menú
 RegisterCommand('pavelilegal', function()
     SetNuiFocus(true, true)
-    SendNUIMessage({ action = 'openMenu' })
+    SendNUIMessage({
+        action = 'openMenu',
+        menuType = 'main'
+    })
 end)
 
 -- Evento para cerrar el menú
@@ -14,113 +23,17 @@ end)
 
 -- Evento para crear una banda
 RegisterNUICallback('createBand', function(data, cb)
-    TriggerServerEvent('pavel_ilegal:createBand', data.bandName, data.leader)
+    local bandName = data.bandName
+    local leader = data.leader
+    TriggerServerEvent('pavel_ilegal:createBand', bandName, leader)
     cb('ok')
-end)
-
--- Evento para añadir miembros
-RegisterNUICallback('addMember', function(data, cb)
-    TriggerServerEvent('pavel_ilegal:addMember', data.bandName, data.member)
-    cb('ok')
-end)
-
--- Evento para iniciar una actividad
-RegisterNUICallback('startActivity', function(data, cb)
-    TriggerServerEvent('pavel_ilegal:startActivity', data.activityType, data.bandName)
-    cb('ok')
-end)
-
--- Evento para depositar dinero
-RegisterNUICallback('depositMoney', function(data, cb)
-    TriggerServerEvent('pavel_ilegal:depositMoney', data.bandName, data.amount)
-    cb('ok')
-end)
-
--- Evento para retirar dinero
-RegisterNUICallback('withdrawMoney', function(data, cb)
-    TriggerServerEvent('pavel_ilegal:withdrawMoney', data.bandName, data.amount)
-    cb('ok')
-end)
-
--- Evento para guardar outfit
-RegisterNUICallback('saveOutfit', function(data, cb)
-    local playerPed = PlayerPedId()
-    local outfitData = {
-        model = GetEntityModel(playerPed),
-        components = {},
-        props = {}
-    }
-
-    for i = 0, 11 do
-        outfitData.components[i] = { drawable = GetPedDrawableVariation(playerPed, i), texture = GetPedTextureVariation(playerPed, i), palette = GetPedPaletteVariation(playerPed, i) }
-    end
-
-    for i = 0, 7 do
-        outfitData.props[i] = { drawable = GetPedPropIndex(playerPed, i), texture = GetPedPropTextureIndex(playerPed, i) }
-    end
-
-    TriggerServerEvent('pavel_ilegal:saveOutfit', data.bandName, data.outfitName, outfitData)
-    cb('ok')
-end)
-
--- Evento para cargar outfit
-RegisterNUICallback('loadOutfit', function(data, cb)
-    TriggerServerEvent('pavel_ilegal:loadOutfit', data.bandName, data.outfitName)
-    cb('ok')
-end)
-
--- Evento para aplicar outfit
-RegisterNetEvent('pavel_ilegal:applyOutfit')
-AddEventHandler('pavel_ilegal:applyOutfit', function(outfitData)
-    local playerPed = PlayerPedId()
-
-    RequestModel(outfitData.model)
-    while not HasModelLoaded(outfitData.model) do
-        Wait(1)
-    end
-    SetPlayerModel(PlayerId(), outfitData.model)
-    playerPed = PlayerPedId()
-
-    for componentId, component in pairs(outfitData.components) do
-        SetPedComponentVariation(playerPed, componentId, component.drawable, component.texture, component.palette)
-    end
-
-    for propId, prop in pairs(outfitData.props) do
-        SetPedPropIndex(playerPed, propId, prop.drawable, prop.texture, true)
-    end
-end)
-
--- Evento para guardar vehículo
-RegisterNUICallback('saveVehicle', function(data, cb)
-    local playerPed = PlayerPedId()
-    local vehicle = GetVehiclePedIsIn(playerPed, false)
-
-    if vehicle and vehicle ~= 0 then
-        local vehicleProps = ESX.Game.GetVehicleProperties(vehicle) -- o QBCore.Functions.GetVehicleProperties(vehicle)
-        TriggerServerEvent('pavel_ilegal:saveVehicle', data.bandName, vehicleProps)
-    else
-        Notify("No estás en un vehículo.")
-    end
-    cb('ok')
-end)
-
--- Evento para spawnear vehículo
-RegisterNetEvent('pavel_ilegal:spawnVehicleClient')
-AddEventHandler('pavel_ilegal:spawnVehicleClient', function(vehicleProps)
-    local playerPed = PlayerPedId()
-    local playerCoords = GetEntityCoords(playerPed)
-
-    ESX.Game.SpawnVehicle(vehicleProps.model, playerCoords, 0.0, function(vehicle)
-        ESX.Game.SetVehicleProperties(vehicle, vehicleProps)
-        TaskWarpPedIntoVehicle(playerPed, vehicle, -1)
-    end)
 end)
 
 -- Función para crear NPCs
 local function CreateNPCs()
     for _, npc in ipairs(Config.NPCPositions) do
-        RequestModel(npc.model)
-        while not HasModelLoaded(npc.model) do
+        RequestModel(GetHashKey(npc.model))
+        while not HasModelLoaded(GetHashKey(npc.model)) do
             Wait(1)
         end
 
@@ -149,21 +62,16 @@ Citizen.CreateThread(function()
                 DrawText3D(npc.coords.x, npc.coords.y, npc.coords.z + 1.0, "[E] Interactuar")
 
                 if IsControlJustPressed(0, 38) then
-                    OpenNPCMenu(npc.type)
+                    SetNuiFocus(true, true)
+                    SendNUIMessage({
+                        action = 'openNPCMenu',
+                        npcType = npc.type
+                    })
                 end
             end
         end
     end
 end)
-
--- Función para abrir el menú del NPC
-function OpenNPCMenu(type)
-    SetNuiFocus(true, true)
-    SendNUIMessage({
-        action = 'openNPCMenu',
-        npcType = type
-    })
-end
 
 -- Función para dibujar texto 3D
 function DrawText3D(x, y, z, text)
