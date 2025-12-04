@@ -12,14 +12,14 @@ Config.Activities = {
         label = "Robo",
         minPolice = 2,
         reward = { min = 5000, max = 15000 },
-        xp = 50,
+        xp = 10,
         cooldown = 3600
     },
     ['drugs'] = {
         label = "Tráfico de Drogas",
         minPolice = 1,
         reward = { min = 3000, max = 10000 },
-        xp = 30,
+        xp = 5,
         cooldown = 1800
     }
 }
