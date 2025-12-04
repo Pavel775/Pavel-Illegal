@@ -33,7 +33,7 @@ Config.BandLevels = {
     { level = 5, xpRequired = 2000, maxMembers = 25, rewardBonus = 2.0 }
 }
 
--- Posiciones de los NPCs (ejemplo)
+-- Posiciones de los NPCs
 Config.NPCPositions = {
     { coords = vector3(425.0, -977.0, 30.0), heading = 180.0, model = 'g_m_m_chigoon_01', type = 'wardrobe' },
     { coords = vector3(427.0, -975.0, 30.0), heading = 180.0, model = 'g_m_m_chiboss_01', type = 'safe' },

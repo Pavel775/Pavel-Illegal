@@ -42,6 +42,80 @@ RegisterNUICallback('withdrawMoney', function(data, cb)
     cb('ok')
 end)
 
+-- Evento para guardar outfit
+RegisterNUICallback('saveOutfit', function(data, cb)
+    local playerPed = PlayerPedId()
+    local outfitData = {
+        model = GetEntityModel(playerPed),
+        components = {},
+        props = {}
+    }
+
+    for i = 0, 11 do
+        outfitData.components[i] = { drawable = GetPedDrawableVariation(playerPed, i), texture = GetPedTextureVariation(playerPed, i), palette = GetPedPaletteVariation(playerPed, i) }
+    end
+
+    for i = 0, 7 do
+        outfitData.props[i] = { drawable = GetPedPropIndex(playerPed, i), texture = GetPedPropTextureIndex(playerPed, i) }
+    end
+
+    TriggerServerEvent('pavel_ilegal:saveOutfit', data.bandName, data.outfitName, outfitData)
+    cb('ok')
+end)
+
+-- Evento para cargar outfit
+RegisterNUICallback('loadOutfit', function(data, cb)
+    TriggerServerEvent('pavel_ilegal:loadOutfit', data.bandName, data.outfitName)
+    cb('ok')
+end)
+
+-- Evento para aplicar outfit
+RegisterNetEvent('pavel_ilegal:applyOutfit')
+AddEventHandler('pavel_ilegal:applyOutfit', function(outfitData)
+    local playerPed = PlayerPedId()
+
+    RequestModel(outfitData.model)
+    while not HasModelLoaded(outfitData.model) do
+        Wait(1)
+    end
+    SetPlayerModel(PlayerId(), outfitData.model)
+    playerPed = PlayerPedId()
+
+    for componentId, component in pairs(outfitData.components) do
+        SetPedComponentVariation(playerPed, componentId, component.drawable, component.texture, component.palette)
+    end
+
+    for propId, prop in pairs(outfitData.props) do
+        SetPedPropIndex(playerPed, propId, prop.drawable, prop.texture, true)
+    end
+end)
+
+-- Evento para guardar vehículo
+RegisterNUICallback('saveVehicle', function(data, cb)
+    local playerPed = PlayerPedId()
+    local vehicle = GetVehiclePedIsIn(playerPed, false)
+
+    if vehicle and vehicle ~= 0 then
+        local vehicleProps = ESX.Game.GetVehicleProperties(vehicle) -- o QBCore.Functions.GetVehicleProperties(vehicle)
+        TriggerServerEvent('pavel_ilegal:saveVehicle', data.bandName, vehicleProps)
+    else
+        Notify("No estás en un vehículo.")
+    end
+    cb('ok')
+end)
+
+-- Evento para spawnear vehículo
+RegisterNetEvent('pavel_ilegal:spawnVehicleClient')
+AddEventHandler('pavel_ilegal:spawnVehicleClient', function(vehicleProps)
+    local playerPed = PlayerPedId()
+    local playerCoords = GetEntityCoords(playerPed)
+
+    ESX.Game.SpawnVehicle(vehicleProps.model, playerCoords, 0.0, function(vehicle)
+        ESX.Game.SetVehicleProperties(vehicle, vehicleProps)
+        TaskWarpPedIntoVehicle(playerPed, vehicle, -1)
+    end)
+end)
+
 -- Función para crear NPCs
 local function CreateNPCs()
     for _, npc in ipairs(Config.NPCPositions) do

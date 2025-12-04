@@ -10,9 +10,18 @@ window.addEventListener('message', function(event) {
         if (event.data.npcType === 'safe') {
             document.getElementById('npcTitle').textContent = 'Caja Fuerte';
             document.getElementById('safeOptions').style.display = 'block';
-        } else {
-            document.getElementById('npcTitle').textContent = event.data.npcType.charAt(0).toUpperCase() + event.data.npcType.slice(1);
+            document.getElementById('wardrobeOptions').style.display = 'none';
+            document.getElementById('garageOptions').style.display = 'none';
+        } else if (event.data.npcType === 'wardrobe') {
+            document.getElementById('npcTitle').textContent = 'Armario';
             document.getElementById('safeOptions').style.display = 'none';
+            document.getElementById('wardrobeOptions').style.display = 'block';
+            document.getElementById('garageOptions').style.display = 'none';
+        } else if (event.data.npcType === 'garage') {
+            document.getElementById('npcTitle').textContent = 'Garaje';
+            document.getElementById('safeOptions').style.display = 'none';
+            document.getElementById('wardrobeOptions').style.display = 'none';
+            document.getElementById('garageOptions').style.display = 'block';
         }
     }
 });
@@ -76,6 +85,57 @@ document.getElementById('withdrawMoney').addEventListener('click', () => {
     fetch(`https://${GetParentResourceName()}/withdrawMoney`, {
         method: 'POST',
         body: JSON.stringify({ bandName, amount }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+});
+
+// Función para guardar outfit
+document.getElementById('saveOutfit').addEventListener('click', () => {
+    const bandName = document.getElementById('bandName').value;
+    const outfitName = document.getElementById('outfitName').value;
+    fetch(`https://${GetParentResourceName()}/saveOutfit`, {
+        method: 'POST',
+        body: JSON.stringify({ bandName, outfitName }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+});
+
+// Función para cargar outfit
+document.getElementById('loadOutfit').addEventListener('click', () => {
+    const bandName = document.getElementById('bandName').value;
+    const outfitName = document.getElementById('outfitName').value;
+    fetch(`https://${GetParentResourceName()}/loadOutfit`, {
+        method: 'POST',
+        body: JSON.stringify({ bandName, outfitName }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+});
+
+// Función para guardar vehículo
+document.getElementById('saveVehicle').addEventListener('click', () => {
+    const bandName = document.getElementById('bandName').value;
+    fetch(`https://${GetParentResourceName()}/saveVehicle`, {
+        method: 'POST',
+        body: JSON.stringify({ bandName }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+});
+
+// Función para sacar vehículo
+document.getElementById('spawnVehicle').addEventListener('click', () => {
+    const bandName = document.getElementById('bandName').value;
+    const plate = document.getElementById('vehiclePlate').value;
+    fetch(`https://${GetParentResourceName()}/spawnVehicle`, {
+        method: 'POST',
+        body: JSON.stringify({ bandName, plate }),
         headers: {
             'Content-Type': 'application/json'
         }

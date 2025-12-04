@@ -13,6 +13,7 @@ client_scripts {
 }
 
 server_scripts {
+    '@oxmysql/lib/MySQL.lua', -- o '@mysql-async/lib/MySQL.lua' si usas ghmattimysql
     'config.lua',
     'server.lua'
 }
@@ -22,12 +23,7 @@ files {
     'html/style.css',
     'html/script.js'
 }
+
 dependencies {
-    'es_extended', -- Para ESX
-    'qb-core'      -- Para QBCore
+    'oxmysql' -- o 'mysql-async'
 }
--- Comando para abrir el menú
-RegisterCommand('pavelilegal', function()
-    SetNuiFocus(true, true)
-    SendNUIMessage({ action = 'openMenu' })
-end)
