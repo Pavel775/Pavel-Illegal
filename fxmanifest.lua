@@ -2,7 +2,7 @@ fx_version 'cerulean'
 game 'gta5'
 
 author 'Pavel775 Network'
-description 'Script para gestionar bandas ilegales en FiveM (ESX/QBCore) con NPCs y niveles de banda.'
+description 'Script para gestionar bandas ilegales (ESX/QBCore) con NPCs y niveles de banda.'
 version '1.1.0'
 
 ui_page 'html/ui.html'
