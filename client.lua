@@ -22,8 +22,8 @@ RegisterNUICallback('addMember', function(data, cb)
     cb('ok')
 end)
 
--- Evento para eliminar bandas
-RegisterNUICallback('deleteBand', function(data, cb)
-    TriggerServerEvent('pavel_ilegal:deleteBand', data.bandName)
+-- Evento para iniciar una actividad
+RegisterNUICallback('startActivity', function(data, cb)
+    TriggerServerEvent('pavel_ilegal:startActivity', data.activityType, data.bandName)
     cb('ok')
 end)

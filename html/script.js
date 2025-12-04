@@ -31,19 +31,20 @@ document.getElementById('addMember').addEventListener('click', () => {
     });
 });
 
-// Función para eliminar bandas
-document.getElementById('deleteBand').addEventListener('click', () => {
-    const bandName = document.getElementById('deleteBandName').value;
-    fetch(`https://${GetParentResourceName()}/deleteBand`, {
+// Función para iniciar una actividad
+document.getElementById('startActivity').addEventListener('click', () => {
+    const bandName = document.getElementById('bandName').value;
+    const activityType = document.getElementById('activityType').value;
+    fetch(`https://${GetParentResourceName()}/startActivity`, {
         method: 'POST',
-        body: JSON.stringify({ bandName }),
+        body: JSON.stringify({ bandName, activityType }),
         headers: {
             'Content-Type': 'application/json'
         }
     });
 });
 
-// Cerrar el menú
+// Cerrar el menú con ESC
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         fetch(`https://${GetParentResourceName()}/closeMenu`, {

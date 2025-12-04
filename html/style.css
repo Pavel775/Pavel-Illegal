@@ -30,7 +30,7 @@ body {
     gap: 5px;
 }
 
-input {
+input, select {
     padding: 8px;
     border-radius: 5px;
     border: none;
